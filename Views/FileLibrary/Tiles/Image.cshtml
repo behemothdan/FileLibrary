@@ -1,0 +1,23 @@
+﻿@model FileLibraryItem
+
+@{
+	var resizedTempImage = Url.Content(Model.Path + "?width=140&height=140&mode=crop");
+}
+<div class="col-md-2 col-sm-3 col-xs-4 library-entry image">
+	<div class="thumbnail">
+		<button class="showImageModal" data-toggle="modal" data-src="@Url.Content(Model.Path)" data-filename="@Model.Name" data-filedate="@Model.DateAdded" data-target="#modalContainer">
+			<img src="@resizedTempImage" class="img-responsive" alt="@Model.Name" data-toggle="tooltip" data-placement="top" title="@Model.Name" />
+		</button>
+		<div class="caption">
+			<p class="hidden">@Model.Name</p>
+			<p class="hidden">@Model.Size</p>
+			<p class="hidden">@Model.DateAdded</p>
+			<p class="hidden">@String.Format("{0:f}", Model.DateAdded).ToString().ToLower()</p>
+			<p class="hidden">@Model.FileType</p>
+			<a class="btn btn-default btn-sm" href="@Url.Content(Model.Path)" download="@Model.Name" title="@Model.Name"><span class="glyphicon glyphicon-circle-arrow-down" aria-hidden="true"></span></a>
+			<button class="btn btn-default btn-sm showImageModal" type="button" data-toggle="modal" data-src="@Url.Content(Model.Path)" data-filename="@Model.Name" data-filedate="@Model.DateAdded" data-target="#modalContainer"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span></button>
+			<button class="btn btn-default btn-sm editImageModal" type="button" data-toggle="modal" data-src="@Url.Content(Model.Path)" data-filename="@Model.Name" data-target="#imageEditor"><span class="glyphicon glyphicon-pencil"></span></button>
+			<button class="btn btn-default btn-sm deleteFileModal" type="button" data-toggle="modal" data-isfolder="false" data-name="@Model.Name" data-path="@Model.Path" data-target="#deleteConfirmation"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>			
+		</div>
+	</div>
+</div>

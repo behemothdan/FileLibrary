@@ -1,0 +1,162 @@
+﻿@model List<FileLibraryItem>
+<!-- These are the modal windows used for various boxes on the page -->
+<!-- Modal Container for loading images for display purposes only -->
+<div class="modal fade" id="modalContainer" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="ModalImageContainer">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-body">
+				<a id="modalImageLink" href="" target="_blank">
+					<img src="" id="modalImage" class="img-responsive" />
+				</a>
+			</div>
+			<div class="modal-footer">
+				<span id="footerFileName"></span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Image Editor Modal -->
+<div class="modal fade" id="imageEditor" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="ModalImageEditor" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-body">				
+				<div class="row">
+					<div class="crop-image-container">
+						<img src="" id="modalImageEdit" class="img-responsive" />
+					</div>
+				</div>
+				<div class="row edit-container">					
+					<div class="btn-group" role="group" aria-label="image-editing-tools">
+						<button type="button" class="btn btn-default crop" data-editfunction="crop" alt="crop"><i class="material-icons">crop</i></button>						
+						<button type="button" class="btn btn-default rotateleft" data-editfunction="rotate" data-editvalues="-45" alt="rotate_left"><i class="material-icons">rotate_left</i></button>
+						<button type="button" class="btn btn-default rotateright" data-editfunction="rotate" data-editvalues="45" alt="rotate_right"><i class="material-icons">rotate_right</i></button>
+						<button type="button" class="btn btn-default flip" data-editfunction="flip" data-editvalues="horizontal" alt="flip"><i class="material-icons">flip</i></button>
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-default saturation dropdown-toggle" data-editfunction="saturation" data-toggle="dropdown" alt="saturation"><i class="material-icons">tonality</i></button>
+							<ul class="dropdown-menu">
+								<li>
+									Saturation<input id="saturation" data-editfunction="saturation" type="range" min="-100" max="100" value="0" steps="5" />
+								</li>
+							</ul>
+						</div>
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-default rounded-corners dropdown-toggle" data-editfunction="roundedcorners" data-toggle="dropdown" alt="roundedcorners"><i class="material-icons">panorama_fish_eye</i></button>
+							<ul class="dropdown-menu">
+								<li>
+									Corner Radius<input id="roundedCorners" data-editfunction="roundedcorners" type="range" min="0" max="100" value="0" steps="5" />
+								</li>
+							</ul>
+						</div>
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-default resize dropdown-toggle" data-editfunction="resize" data-toggle="dropdown" alt="Resize"><i class="material-icons" alt="resize">photo_size_select_large</i></button>
+							<ul class="dropdown-menu">
+								<li>
+									Resize <input id="resize" type="number" data-editfunction="resize" min="10" /> px
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="row crop-confirm-buttons">
+					<div class="btn-group" role="group">
+						<button type="button" class="btn btn-default cropratio" data-ratio="16/9">16:9</button>
+						<button type="button" class="btn btn-default cropratio" data-ratio="4/3">4:3</button>
+						<button type="button" class="btn btn-default cropratio" data-ratio="1/1">1:1</button>
+						<button type="button" class="btn btn-default cropratio" data-ratio="2/3">2:3</button>
+						<button type="button" class="btn btn-default cropratio" data-ratio="NaN">Free</button>
+					</div>
+					<div class="btn-group" role="group">
+						<button type="button" class="btn btn-success confirm-crop"><i class="material-icons">done</i></button>
+						<button type="button" class="btn btn-danger cancel-crop"><i class="material-icons">clear</i></button>
+					</div>
+					<input type="hidden" name="imageData" id="imageData" />
+					<input type="hidden" name="originalImageName" id="originalImageName" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="pull-left">
+					<div class="btn btn-default colorpicker"><input id="backgroundColorPicker" data-editfunction="bgcolor" type="color" value="#000000" /></div>
+					<button type="button" class="btn btn-default resetBgColor">Reset Background Color</button>
+				</div>
+				<button type="button" class="btn btn-primary save-image">Save Changes</button>				
+				<a href="@Url.Action("Index", "FileLibrary", new { FolderPath = ViewBag.FolderPath })" class="btn btn-default">Cancel</a>				
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal container for file/folder deletion confirmation -->
+<div class="modal fade" id="deleteConfirmation" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="FileDeleteConfirmation">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="DeleteIsFile">Are you sure you want to delete this file?</h4>
+				<h4 class="DeleteIsFolder">Are you sure you want to delete this folder and all of the contents? This cannot be undone.</h4>
+			</div>
+			@using (Html.BeginForm("Delete", "FileLibrary", FormMethod.Post, new { @class = "form-inline", @id = "deleteForm" }))
+			{
+				<div class="modal-body">
+					<span id="fileToDelete"></span>
+				</div>
+				<div class="modal-footer">
+					<div class="form-group">
+						<input id="DeletePath" name="DeletePath" type="hidden" />
+						<button type="submit" value="Delete" class="btn btn-danger">
+							<span class="DeleteIsFile">Yes, delete this file.</span>
+							<span class="DeleteIsFolder">Yes, delete this folder and all it's contents.</span>
+						</button>
+						<button type="button" class="btn btn-info" data-dismiss="modal">
+							<span class="DeleteIsFile">No, do not delete this file.</span>
+							<span class="DeleteIsFolder">No, do not delete this folder.</span>
+						</button>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="modalHelpContainer" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="ModalHelpContainer">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<img src="~/Images/titanium-logo.png" /> <span>Titanium File Library Help</span>
+			</div>
+			<div class="modal-body">
+				<div class="panel panel-default">
+					<div class="panel-heading">Searching</div>
+					<div class="panel-body">
+						<p>Using the search box will search your entire file library for matching results, which you can then filter using the filter tool.</p>
+						<p>You can search using many different criteria. This includes file type, file name, file size, upload date, and creation date.</p>
+						<p>Examples of ways you can search is by typing the name or number of the month, the day you added an item, or the application you use it in (such was Word or Excel).</p>
+						<p>As you type any information into the filter box, your search results will automatically be filtered based off your criteria. You can use this to further refine your search results.</p>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">Uploading New files</div>
+					<div class="panel-body">
+						You can drag and drop the files you wish to upload into the dotted box or click on it to bring up a traditional file browser. Files are automatically uploaded as you add them. When you have finished adding all the files you wish to upload, click the "Finish" button once it appears.
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">File Information</div>
+					<div class="panel-body">
+						Uploaded files and folders have a series of buttons to help you use your files. You can download your files (or entire directories) to your local computer, delete the files from your file library, or view image files and their details. You can also hover over an item in your file library to see it's name.
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">Image Editing</div>
+					<div class="panel-body">
+						<p>By clicking on the pencil icon below any image, you can open it in the image editor, allowing you to apply some basic adjustments to the image.</p>
+						<p>These include cropping, resizing, rotating, flipping an image</p>
+						<p>By clicking the 'Save Changes' button you will save a new copy of the image in your file library, leaving the original intact. You can also press escape or click the cancel button to close the editor without saving.</p>
+						<p>If you cropped an image, a new image is saved to your website, leaving the original intact.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

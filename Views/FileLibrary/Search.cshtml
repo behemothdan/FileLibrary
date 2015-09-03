@@ -1,0 +1,24 @@
+﻿@model List<FileLibraryItem>
+@{
+	string ViewType = "Tiles"; //This is so that we can have multipule view types easily. I recommend using a cookie to allow this setting to be persisted.
+}
+@foreach (var uploadedfile in Model)
+{
+	if (uploadedfile.IsDirectory)
+	{
+		Html.RenderPartial("~/Views/FileLibrary/" + ViewType + "/Folder.cshtml", uploadedfile, this.ViewData);
+	}
+	else
+	{
+		// Using an array of file types in the model rather than a case statement in case we need to add additional file type checks in the future
+		// This way we don't have to repeat ourselves and only edit file types in one location
+		if (FileLibraryReferences.ImageMimeTypes.Contains(uploadedfile.FileType))
+		{
+			Html.RenderPartial("~/Views/FileLibrary/" + ViewType + "/Image.cshtml", uploadedfile);
+		}
+		else
+		{
+			Html.RenderPartial("~/Views/FileLibrary/" + ViewType + "/Default.cshtml", uploadedfile);
+		}
+	}	
+}		

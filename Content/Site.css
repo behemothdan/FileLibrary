@@ -1,0 +1,127 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+	font-family: 'Open Sans', sans-serif;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.page-header div span {	
+	font-size: 18px;
+}
+
+.thumbnail .caption {
+	padding: 4px;
+}
+
+.archiveDownload
+{
+	margin-right: 4px;
+}
+
+.breadcrumb
+{
+	margin-bottom: 12px;
+}
+
+.breadcrumb
+{
+	margin-top:10px;
+}
+
+.foldericon
+{
+	padding-left:5px;
+}
+
+#libraryContents > div 
+{
+	margin-bottom:12px;
+}
+
+.thumbnail > .showImageModal{
+	border: none;
+	background: none;
+}
+
+#finish-upload
+{
+	margin-top:8px;
+}
+
+.create-folder-dropdown
+{
+	width:355px;
+	padding-left:15px;
+}
+
+.library-nav > *
+{
+	margin-right:5px;
+}
+
+.startHidden
+{
+	display: none;
+}
+
+.search-tools
+{
+	margin-bottom:15px;
+}
+
+.searchFilter > .form-group > .input-group > .checkbox
+{
+	margin-left: 10px;
+}
+
+.edit-container
+{
+	text-align: center;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.crop-confirm-buttons
+{
+	text-align: center;
+	display: none;
+}
+
+.crop-image-container
+{
+	display: inline-block;
+}
+
+#resize {
+	width:130px;
+}
+
+@media (min-width: 768px)
+{
+	/* Custom modal size to support the image editor features */
+	.modal-xl
+	{
+		width: 90%;
+		max-width: 1200px;
+		min-height: 500px;
+	}
+}

@@ -1,0 +1,31 @@
+﻿@model FileLibraryItem
+
+@{
+	// Make sure the folder icon only uses the first 10 characters when generating the folder icon	
+	string folderName = Model.Name.Substring(0, (Model.Name.Length > 10 ? 10 : Model.Name.Length));
+	// If we end up truncating the folder name add the ... to signify the shortened name
+	if (Model.Name.Length > 10)
+	{
+		folderName = folderName + "...";
+	}
+	var folderWatermark = Url.Content("~/Images/folder-icon.png?watermark=" + folderName + "&color=fff&dropshadow=true&fontsize=16&textposition=2,40&fontfamily=arial");
+}
+<div class="col-md-2 col-sm-3 col-xs-4 library-entry folder">
+	<div class="thumbnail">
+		<a href="@Url.Action("Index", "FileLibrary", new { folderPath = Model.Path })">
+			<img src="@folderWatermark" class="img-responsive foldericon" alt="@Model.Name" data-toggle="tooltip" data-placement="top" title="@Model.Name" />
+		</a>
+		<div class="caption">
+			<p class="hidden">@Model.Name</p>			
+			<p class="hidden">@Model.DateAdded</p>
+			<p class="hidden">@String.Format("{0:f}", Model.DateAdded).ToString().ToLower()</p>
+			@using (Html.BeginForm("ZipFolder", "FileLibrary", new { FolderPath = ViewBag.FolderPath }, FormMethod.Post, new { @class = "form-inline pull-left archiveDownload", @id = "downloadFolder" }))
+			{
+				<input id="folderToDownloadFormField" name="folderToDownloadVar" type="hidden" value="@Model.Name" />
+				<button id="folderDownloadConfirmation" class="btn btn-default btn-sm" type="submit" value="DownloadFolder"><span class="glyphicon glyphicon-circle-arrow-down" aria-hidden="true"></span></button>
+			}
+			<a class="btn btn-default btn-sm" href="@Url.Action("Index", "FileLibrary", new { folderPath = Model.Path })"><span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span></a>
+			<button class="btn btn-default btn-sm deleteFolderModal" type="button" data-toggle="modal" data-isfolder="true" data-name="@Model.Name" data-path="@Model.Path" data-target="#deleteConfirmation"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+		</div>
+	</div>
+</div>

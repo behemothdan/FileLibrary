@@ -1,0 +1,202 @@
+﻿@model List<FileLibraryItem>
+@{
+	List<Breadcrumb> breadcrumbMenu = ViewData["FolderMenu"] as List<Breadcrumb>;
+	string ViewType = "Tiles"; //This is so that we can have multipule view types easily. I recommend using a cookie to allow this setting to be persisted.
+	LibraryPostbackMessage lpbm = ViewBag.LibraryPostbackMessage;
+}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title> Titanium File Library</title>
+	<link href='//fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
+	<link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	@Styles.Render("~/Content/css")
+	@Styles.Render("~/Content/customcss")
+	@Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+	<div class="container">
+		<div class="row page-header">
+			<div class="col-md-3">
+				<img src="~/Images/titanium-logo.png" /> <span>Titanium File Library</span>
+			</div>
+
+			<div class="col-md-5 col-md-offset-4 library-nav">
+				<button class="btn btn-default pull-left" type="button" id="showSearchTools">Search</button>
+				<button class="btn btn-default pull-left" type="button" id="showUploadTools">Upload Files</button>
+				<div class="dropdown pull-left">
+					<button class="btn btn-default dropdown-toggle" type="button" id="createFolderDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						Create Folder
+					</button>
+					<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="createFolderDropdown">
+						<li>
+							@using (Html.BeginForm("Create", "FileLibrary", new { FolderPath = ViewBag.FolderPath }, FormMethod.Post, new { @class = "form-inline", @id = "createDirectory" }))
+							{
+								<div class="form-group create-folder-dropdown">
+									<input type="text" class="form-control" name="directoryName" placeholder="Type a new folder name" required />
+									<button type="submit" class="btn btn-success">
+										<span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+									</button>
+								</div>
+							}
+						</li>
+					</ul>
+				</div>
+				<button type="button" data-toggle="modal" data-target="#modalHelpContainer" class="btn btn-info pull-left">
+					Need Help?
+				</button>
+			</div>
+		</div>
+
+		<!-- Container for the search and filter tools -->
+		<div class="row search-tools startHidden">
+			<div class="col-md-12">
+				<div class="search form-inline col-md-6 col-sm-12 col-xs-12">
+					<input id="searchfield" aria-describedby="searchicon" type="text" class="form-control" placeholder="Search all files and folders" required />
+					<button id="submitsearch" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search</button>
+				</div>
+				<div class="searchFilter form-inline col-md-6 col-sm-12 col-xs-12">
+					<div class="input-group">
+						<span id="filtericon" class="input-group-addon"><span class="glyphicon glyphicon-filter" aria-hidden="true"></span></span>
+						<input aria-describedby="filtericon" type="text" class="quicksearch form-control" placeholder="Begin typing to filter results" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Container for the upload form -->
+		<div class="row upload-tools startHidden">
+			@using (Html.BeginForm("Upload", "FileLibrary", new { FolderPath = ViewBag.FolderPath }, FormMethod.Post, new { enctype = "multipart/form-data", @class = "dropzone", @id = "dropzone-form" }))
+			{
+				<div class="fallback">
+					<div class="col-md-6 col-sm-6 col-xs-12">
+						<input type="file" name="fileupload" multiple="multiple" class="form-control" size="4096" accept="image/*, application/pdf, text/plain, application/msword, application/vnd.ms-excel, application/xml, audio/mpeg3" oninvalid="this.setCustomValidity('Please select one or more files to upload.')" required />
+					</div>
+					<div class="col-md-6 col-sm-6 col-xs-12">
+						<button type="submit" name="Command" class="btn btn-success">
+							<img src="~/Images/upload-icon.png" />&nbsp;Upload File
+						</button>
+					</div>
+				</div>
+			}
+			<a id="finish-upload" href="@Url.Action("Index", "FileLibrary", new { FolderPath = ViewBag.FolderPath })" class="btn btn-success pull-right">Finished</a>
+		</div>
+
+		<!-- Breadcrumb navigation -->
+		<div class="row">
+			<ol class="breadcrumb">
+				<li><a href="@Url.Action("Index", "FileLibrary", new { FolderPath = "" })"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a></li>
+				@foreach (var menuItem in breadcrumbMenu)
+				{
+					<li><a href="@Url.Action("Index", "FileLibrary", new { FolderPath = menuItem.Path })">@menuItem.Name</a></li>
+				}
+			</ol>
+		</div>
+
+		<!-- Alert container -->
+		<div class="row">
+			@if (lpbm != null)
+			{
+				<div class='alert alert-@lpbm.Type.ToString() alert-dismissable' role='alert'>
+					<button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+						<span aria-hidden='true'>&times;</span>
+					</button>@lpbm.Message
+				</div>
+			}
+		</div>
+
+		<div id="libraryContents" class="row">
+			@foreach (var uploadedfile in Model)
+			{
+				if (uploadedfile.IsDirectory)
+				{
+					Html.RenderPartial("~/Views/FileLibrary/" + ViewType + "/Folder.cshtml", uploadedfile, this.ViewData);
+				}
+				else
+				{
+					// Using an array of file types in the model rather than a case statement in case we need to add additional file type checks in the future
+					// This way we don't have to repeat ourselves and only edit file types in one location
+					if (FileLibraryReferences.ImageMimeTypes.Contains(uploadedfile.FileType))
+					{
+						Html.RenderPartial("~/Views/FileLibrary/" + ViewType + "/Image.cshtml", uploadedfile);
+					}
+					else
+					{
+						Html.RenderPartial("~/Views/FileLibrary/" + ViewType + "/Default.cshtml", uploadedfile);
+					}
+				}
+			}
+		</div>
+	</div>
+
+	@{
+		// Let's move some of this HTML into separate files to keep things clean in here
+		Html.RenderPartial("~/Views/FileLibrary/Modals.cshtml");
+	}
+
+	@Scripts.Render("~/bundles/jquery")
+	@Scripts.Render("~/bundles/bootstrap")
+	@Scripts.Render("~/bundles/customscripts")
+
+	<!-- Any Javascript that uses Url.Action needs to be in the cshtml since that data is only available inside Razor views -->
+	<script type="text/javascript">
+		// Search validation and loading results through Ajax
+		$('#submitsearch').click(function () {
+			if ($('#searchfield').val() != "") {
+				// Clear the error class if there happened to be one
+				$('.search').removeClass('has-error');
+
+				// Load the search results partial view
+				$('#libraryContents').load('@Url.Action("Search", "FileLibrary", new { FolderPath = ViewBag.FolderPath })' + '?SearchQuery=' + $('#searchfield').val(),
+				function () {
+					// Reinitialize isotope and the Bootstrap tooltips after loading search results through Ajax
+					$searchGrid.isotope('reloadItems');
+					$('.quicksearch').keyup();
+					$('[data-toggle="tooltip"]').tooltip();
+				})
+			} else if ($('#searchfield').val() == "") {
+				$('.search').addClass('has-error');
+			}
+		});
+
+		// Confirms the selected cropping area, saves the new cropped image to the server, and loads it in the editing window for additional changes
+		$('.confirm-crop').on("click", function () {
+			var form = $("#cropForm");
+			var croppedImage = $imageToCrop.cropper('getCroppedCanvas');
+			var newImageURL = croppedImage.toDataURL();
+
+			$('#modalImageEdit').attr('src', newImageURL);
+			newImageURL = newImageURL.replace('data:image/png;base64,', '');
+			$('#imageData').val(newImageURL);
+			cancelCrop();
+
+			$.ajax({
+				type: "POST",
+				url: '@Url.Action("SaveCrop", "FileLibrary", new { FolderPath = ViewBag.FolderPath })',
+				data: { imageData: newImageURL, originalImageName: fileNameSource, FolderPath: "@ViewBag.FolderPath" },
+				success: function (results) { $('#modalImageEdit').attr('src', results.FolderPath); },
+				dataType: "json"
+			});
+		});
+
+		// Save image modified by URL queries
+		$('.save-image').on("click", function () {
+			var modifiedImage = $('#modalImageEdit').attr('src');
+			// Should prevent an image being saved with a new name if no changes were made to it since the last time it was saved
+			if (querystring != "")
+			{
+				$.ajax({
+					type: "POST",
+					url: '@Url.Action("Save", "FileLibrary", new { FolderPath = ViewBag.FolderPath })',
+					data: { imageURL: modifiedImage, originalImageName: fileNameSource, FolderPath: "@ViewBag.FolderPath" },
+					success: function (results) {
+						window.location.href = '@Url.Action("Index", "FileLibrary", new { FolderPath = ViewBag.FolderPath })';
+					},
+					dataType: "json"
+				});
+			}
+		});
+	</script>
+</body>
+</html>
